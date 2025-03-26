@@ -14,9 +14,11 @@ Este projeto tem como objetivo desenvolver um sistema de _legendagem em tempo re
 ## Especificações Técnicas
 
 - **Captura de Áudio**:
+
   - **Plataforma**: Windows (utilizando _WASAPI_ em modo _loopback_)
   - **Parâmetros**: Taxa de amostragem de 16kHz, formato _PCM 16-bit mono_, _buffer_ dinâmico de 50–200ms
   - **Filtros DSP**: Implementação de supressão de ruído (ex.: _RNNoise_)
+
 - **Processamento e Transcrição**:
 
   - **Modelo**: _Faster-Whisper_ (com suporte a _int8_ para quantização)
@@ -24,8 +26,68 @@ Este projeto tem como objetivo desenvolver um sistema de _legendagem em tempo re
   - **Técnicas Adicionais**: Decodificação incremental, uso de _DTW_ para alinhamento e correção ortográfica
 
 - **Interface de Exibição**:
-  - **Abordagem**: Overlay configurável, utilizando frameworks como _PyQt_ ou _pyglet_ (no Windows, com integração ao _DWM_)
+  - **Abordagem**: Overlay configurável, utilizando frameworks como _PyQt5_ ou _pyglet_ (com integração ao _DWM_ no Windows)
   - **Recursos**: Ajuste de posição, tamanho, transparência e contraste adaptativo
+
+## Configuração do Ambiente
+
+Para garantir a reprodutibilidade e isolamento das dependências, seguimos as práticas profissionais abaixo:
+
+1. **Ambiente Virtual**:
+
+   - Crie um ambiente virtual usando:
+     ```bash
+     python -m venv venv
+     ```
+   - Ative o ambiente:
+     - No Windows:
+       ```bash
+       venv\Scripts\activate
+       ```
+     - No macOS/Linux:
+       ```bash
+       source venv/bin/activate
+       ```
+
+2. **Instalação de Dependências**:
+
+   - Liste as dependências em `requirements.txt`:
+     ```plaintext
+     pyqt5
+     sounddevice
+     faster-whisper
+     numpy
+     ```
+   - Instale-as com:
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - Para congelar as versões, execute:
+     ```bash
+     pip freeze > requirements.txt
+     ```
+
+3. **Ferramentas de Linting e Formatação**:
+
+   - Utilize o **Flake8** para análise estática:
+     ```bash
+     pip install flake8
+     ```
+   - Configure o `.flake8`:
+     ```ini
+     [flake8]
+     max-line-length = 120
+     exclude = venv,build,.vscode,__pycache__
+     ```
+   - Utilize o **Black** para formatação automática:
+     ```bash
+     pip install black
+     ```
+   - Instruções para formatação: `black src/`
+
+4. **Controle de Versão e CI**:
+   - O repositório inclui um arquivo `.gitignore` (veja abaixo) para ignorar arquivos e pastas indesejadas.
+   - Planeje a configuração de uma pipeline CI (ex.: GitHub Actions) para rodar testes e validações de linting automaticamente.
 
 ## Roadmap e Futuras Extensões
 
