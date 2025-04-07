@@ -1,25 +1,22 @@
-# Ambiente virtual
-venv/
-
-# Arquivos de cache do Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 
-# Configurações do VSCode
-.vscode/
+# Virtual environment
+venv/
+*.venv/
 
-# Pastas de build e distribuição
+# Build and distribution directories
 build/
 dist/
 *.egg-info/
 
-# Arquivos de log
+# Logs
 *.log
 
-# Arquivos temporários do sistema
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS specific files
 .DS_Store
 Thumbs.db
-
-# Outras dependências ou arquivos gerados
-*.sqlite3
