@@ -1,5 +1,3 @@
-Segue abaixo a versão atualizada do README em Markdown, organizada e com formatação para ser intuitiva e funcional:
-
 ```markdown
 # Sistema de Legendagem em Tempo Real para Acessibilidade Digital
 
