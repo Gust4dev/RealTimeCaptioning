@@ -1,61 +1,73 @@
 from faster_whisper import WhisperModel
 import numpy as np
 import os
-from scipy.io.wavfile import write
-import soxr  # Biblioteca para reamostragem de alta qualidade
+import logging
+import io
+import wave
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class TranscricaoEmTempoReal:
     def __init__(self, modelo='tiny', idioma='pt', dispositivo="cpu", tipo_computacao="int8", device_rate=48000):
-        print(f"Carregando modelo Faster Whisper '{modelo}'...")
+        logger.info(f"Carregando modelo Faster Whisper '{modelo}'...")
         self.model = WhisperModel(modelo, device=dispositivo, compute_type=tipo_computacao)
         self.idioma = idioma
         self.buffer_audio = np.array([], dtype=np.int16)
-        self.fs = 16000  # Taxa de amostragem desejada para transcrição
-        self.device_rate = device_rate  # Taxa nativa do dispositivo (ex.: 48000 Hz)
+        self.fs = 16000
+        self.device_rate = device_rate
         self.ultima_transcricao = ""
-        self.buffer_max_segundos = 30  # Máximo de segundos a acumular no buffer
+        self.buffer_max_segundos = 5  # Buffer menor para menor latência
         self.segmentos_atuais = []
-        self.arquivo_temp = os.path.join("data", "raw", "temp_audio.wav")
-        print("Modelo carregado e pronto para transcrição.")
+        logger.info("Modelo carregado e pronto para transcrição.")
     
     def processar_audio(self, audio_chunk):
-        # Acumula a amostra raw (capturada a 48000 Hz) no buffer
-        self.buffer_audio = np.append(self.buffer_audio, audio_chunk)
-        max_samples = int(self.buffer_max_segundos * self.device_rate)
-        if len(self.buffer_audio) > max_samples:
-            self.buffer_audio = self.buffer_audio[-max_samples:]
-        
-        # Dispara a transcrição quando acumular pelo menos 2 segundos de áudio raw
-        if len(self.buffer_audio) >= (2 * self.device_rate):
-            # Reamostrar o buffer de 48000 Hz para 16000 Hz usando soxr
-            resampled_float = soxr.resample(self.buffer_audio.astype(np.float32), self.device_rate, self.fs)
-            resampled_audio = np.clip(np.rint(resampled_float), -32768, 32767).astype(np.int16)
-            duracao = len(resampled_audio) / self.fs
-            print(f"Transcrevendo {duracao:.2f} segundos de áudio reamostrado...")
-            # Salva o áudio reamostrado em um arquivo temporário para transcrição
-            write(self.arquivo_temp, self.fs, resampled_audio)
-            segments, info = self.model.transcribe(
-                self.arquivo_temp, 
-                beam_size=5, 
-                language=self.idioma,
-                condition_on_previous_text=True
-            )
-            print(f"Info da transcrição: {info}")
-            self.segmentos_atuais = list(segments)
-            if self.segmentos_atuais:
-                novo_texto = " ".join([seg.text for seg in self.segmentos_atuais])
-                if novo_texto != self.ultima_transcricao:
-                    self.ultima_transcricao = novo_texto
-                    # Mantém um overlap de 1 segundo raw para continuidade
-                    self.buffer_audio = self.buffer_audio[-self.device_rate:]
-                    return self.ultima_transcricao
+        try:
+            # Adiciona o novo chunk ao buffer
+            self.buffer_audio = np.append(self.buffer_audio, audio_chunk)
+            
+            # Mantém apenas os últimos segundos no buffer
+            max_samples = int(self.buffer_max_segundos * self.fs)
+            if len(self.buffer_audio) > max_samples:
+                self.buffer_audio = self.buffer_audio[-max_samples:]
+            
+            # Processa quando temos pelo menos 2 segundos de áudio
+            if len(self.buffer_audio) >= (2 * self.fs):
+                # Cria um buffer de áudio em memória
+                audio_buffer = io.BytesIO()
+                with wave.open(audio_buffer, 'wb') as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(2)  # 16-bit
+                    wf.setframerate(self.fs)
+                    wf.writeframes(self.buffer_audio.tobytes())
+                
+                # Transcreve diretamente do buffer
+                segments, info = self.model.transcribe(
+                    audio_buffer.getvalue(),
+                    beam_size=5,
+                    language=self.idioma,
+                    condition_on_previous_text=True
+                )
+                
+                self.segmentos_atuais = list(segments)
+                if self.segmentos_atuais:
+                    novo_texto = " ".join([seg.text for seg in self.segmentos_atuais])
+                    if novo_texto != self.ultima_transcricao:
+                        self.ultima_transcricao = novo_texto
+                        logger.info(f"Transcrição: {novo_texto}")
+                        # Mantém apenas o último segundo no buffer para continuidade
+                        self.buffer_audio = self.buffer_audio[-self.fs:]
+                        return novo_texto
+        except Exception as e:
+            logger.error(f"Erro no processamento de áudio: {e}")
         return None
 
 def transcrever_audio(arquivo, modelo='tiny', idioma='pt'):
-    print("Carregando modelo Faster Whisper...")
+    logger.info("Carregando modelo Faster Whisper...")
     model = WhisperModel(modelo, device="cpu", compute_type="int8")
-    print("Transcrevendo áudio...")
+    logger.info("Transcrevendo áudio...")
     segments, _ = model.transcribe(arquivo, beam_size=3, language=idioma)
     texto = " ".join([seg.text for seg in segments])
-    print("Transcrição completa.")
+    logger.info("Transcrição completa.")
     return texto

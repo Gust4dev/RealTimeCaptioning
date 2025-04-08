@@ -1,67 +1,56 @@
-import time
-import os
-import signal
 import sys
-from src.captura_audio import CapturaDeAudio
-from src.transcricao import TranscricaoEmTempoReal, transcrever_audio
-from src.utils import salvar_transcricao
+import logging
+from captura_audio import CapturaDeAudio
+from transcricao import TranscricaoEmTempoReal
+
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
 
 def main():
-    print("Iniciando sistema de legendagem em tempo real...")
-    print("Pressione Ctrl+C para encerrar.")
-    
-    # Cria os diretórios necessários caso não existam
-    os.makedirs("data/raw", exist_ok=True)
-    os.makedirs("data/processed", exist_ok=True)
-    
-    # Inicializa o módulo de transcrição
-    transcricao = TranscricaoEmTempoReal(modelo='tiny', idioma='pt')
-    ultima_transcricao = ""
-    
-    # Função callback para processar cada chunk de áudio
-    def processar_audio(audio_chunk):
-        nonlocal ultima_transcricao
-        texto = transcricao.processar_audio(audio_chunk)
-        if texto and texto != ultima_transcricao:
-            ultima_transcricao = texto
-            print("\n----- Transcrição Atual -----")
-            print(texto)
-            print("-------------------------------\n")
-            salvar_transcricao(texto, arquivo='data/processed/transcricao_atual.txt')
-    
-    # Inicializa o módulo de captura de áudio com callback
-    captura = CapturaDeAudio(callback_processamento=processar_audio)
-    captura.iniciar_captura(dispositivo_loopback=True, salvar_audio=True, arquivo_saida='data/raw/audio.wav')
-    
-    # Configura o manipulador de sinal para encerramento limpo
-    def manipulador_sinal(sig, frame):
-        print("\nEncerrando a captura e transcrição...")
-        captura.parar_captura()
-        sys.exit(0)
-    
-    signal.signal(signal.SIGINT, manipulador_sinal)
-    
-    # Loop principal para manter o programa rodando
     try:
-        while True:
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        print("\nPrograma encerrado pelo usuário.")
-    finally:
-        captura.parar_captura()
+        # Inicializar o sistema de transcrição
+        transcricao = TranscricaoEmTempoReal(
+            modelo='tiny',
+            idioma='pt',
+            dispositivo="cpu",
+            tipo_computacao="int8"
+        )
+        
+        # Função de callback para processar o áudio
+        def processar_audio(audio_chunk):
+            texto = transcricao.processar_audio(audio_chunk)
+            if texto:
+                logger.info(f"Transcrição: {texto}")
+        
+        # Inicializar a captura de áudio
+        captura = CapturaDeAudio(
+            callback_processamento=processar_audio,
+            fs=16000,
+            canais=1
+        )
+        
+        logger.info("Iniciando sistema de transcrição em tempo real...")
+        captura.iniciar_captura(salvar_audio=False)
+        
+        # Manter o programa rodando
+        try:
+            while True:
+                pass
+        except KeyboardInterrupt:
+            logger.info("Encerrando o programa...")
+        finally:
+            captura.parar_captura()
+            
+    except Exception as e:
+        logger.error(f"Erro no sistema: {e}")
+        sys.exit(1)
 
-def modo_legado():
-    """
-    Executa o modo legado (captura e transcrição não em tempo real).
-    """
-    from src import captura_audio, transcricao, utils
-    captura_audio.capturar_audio(duracao=5, fs=16000, canais=1, arquivo='data/raw/audio.wav')
-    texto = transcricao.transcrever_audio('data/raw/audio.wav', modelo='tiny', idioma='pt')
-    utils.salvar_transcricao(texto, arquivo='data/processed/transcricao.txt')
-
-if __name__ == '__main__':
-    # Descomente a linha abaixo para usar o modo legado
-    # modo_legado()
-    
-    # Modo em tempo real
-    main()
+if __name__ == "__main__":
+    main() 
