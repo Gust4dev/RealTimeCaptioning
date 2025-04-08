@@ -30,8 +30,7 @@ Para garantir alta qualidade na conversão de taxas de amostragem, o sistema uti
 
 ## Estrutura do Projeto
 
-```
-RealTimeCaptioning/
+```RealTimeCaptioning/
 ├── data/
 │   ├── raw/                # Áudio capturado (em taxa nativa, ex.: 48000 Hz)
 │   └── processed/          # Transcrições e áudio processado (reamostrado para 16000 Hz)
