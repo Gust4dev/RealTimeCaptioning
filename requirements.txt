@@ -4,3 +4,5 @@ faster-whisper==1.0.3
 numpy==1.23.5
 scipy==1.9.3
 pytest==7.2.0
+pyaudiowpatch==0.2.12.7
+soxr==0.2.0
