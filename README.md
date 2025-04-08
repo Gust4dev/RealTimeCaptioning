@@ -1,102 +1,138 @@
+Segue abaixo a versão atualizada do README em Markdown, organizada e com formatação para ser intuitiva e funcional:
+
+```markdown
 # Sistema de Legendagem em Tempo Real para Acessibilidade Digital
+
+![Banner do Projeto](docs/images/banner.png)  
+*Legenda: Solução integrada para tornar o conteúdo sonoro acessível por meio de transcrição em tempo real.*
 
 ## Visão Geral
 
-Este projeto tem como objetivo desenvolver um sistema de _legendagem em tempo real_ que torna o conteúdo sonoro acessível para usuários com deficiência auditiva e para aqueles que necessitam de suporte visual em ambientes ruidosos. A solução proposta integra _captura de áudio_ diretamente do sistema operacional, processamento local utilizando modelos _ASR_ (como _Faster-Whisper_) e exibição de legendas por meio de um _overlay_ configurável.
+O objetivo deste projeto é desenvolver um sistema de **legendagem em tempo real** que capture o áudio reproduzido pelo sistema operacional (via WASAPI em loopback), processe esse áudio localmente utilizando modelos **ASR** (como o *Faster-Whisper*) e exiba as legendas em um **overlay configurável**.  
+Para garantir alta qualidade na conversão de taxas de amostragem, o sistema utiliza a biblioteca **soxr** para reamostrar o áudio capturado (a 48000 Hz) para a taxa exigida pelo modelo (16000 Hz).
 
 ## Objetivos
 
-- **Transcrição em Tempo Real**: Capturar o áudio reproduzido no sistema (via _WASAPI_ em Windows) e transcrevê-lo de forma contínua com _latência_ inferior a 500ms.
-- **Processamento Neural Otimizado**: Utilizar o _Faster-Whisper_ com _quantização int8_ e técnicas de _beam search_ para balancear _velocidade_ e _precisão_ na transcrição.
-- **Interface de Exibição**: Desenvolver um _overlay_ não intrusivo e personalizável para a apresentação das legendas, permitindo ajustes em posição, tamanho, transparência e estilo.
-- **Pipeline Modular**: Implementar um fluxo de processamento com módulos independentes para _captura_, _pré-processamento_, _transcrição_ e _exibição_, possibilitando futuras expansões e adaptações para outras plataformas.
+- **Transcrição em Tempo Real:**  
+  Capturar o áudio do sistema e transcrevê-lo com latência inferior a 500ms, preservando a sincronização com a transmissão.
 
-## Especificações Técnicas
+- **Processamento Neural Otimizado:**  
+  Utilizar o *Faster-Whisper* com quantização *int8* e técnicas de beam search para equilibrar velocidade e precisão na transcrição.
 
-- **Captura de Áudio**:
+- **Resampling de Alta Qualidade:**  
+  Empregar a biblioteca *soxr* para converter a taxa nativa (ex.: 48000 Hz) para 16000 Hz, garantindo que o áudio processado possua a velocidade correta.
 
-  - **Plataforma**: Windows (utilizando _WASAPI_ em modo _loopback_)
-  - **Parâmetros**: Taxa de amostragem de 16kHz, formato _PCM 16-bit mono_, _buffer_ dinâmico de 50–200ms
-  - **Filtros DSP**: Implementação de supressão de ruído (ex.: _RNNoise_)
+- **Interface de Exibição Modular:**  
+  Desenvolver um overlay intuitivo (através de *PyQt5* ou *pyglet*) para exibir as legendas de forma não intrusiva, com suporte à personalização de posição, tamanho, transparência e contraste.
 
-- **Processamento e Transcrição**:
+- **Pipeline Modular:**  
+  Organizar os módulos de captura, pré-processamento, transcrição e exibição de forma que o sistema seja facilmente escalável e adaptável a futuras melhorias (como suporte a múltiplos idiomas e integração com outras plataformas).
 
-  - **Modelo**: _Faster-Whisper_ (com suporte a _int8_ para quantização)
-  - **Configurações**: Beam size = 3, janelas de 500ms com sobreposição, Voice Activity Detection (VAD) habilitado
-  - **Técnicas Adicionais**: Decodificação incremental, uso de _DTW_ para alinhamento e correção ortográfica
+## Estrutura do Projeto
 
-- **Interface de Exibição**:
-  - **Abordagem**: Overlay configurável, utilizando frameworks como _PyQt5_ ou _pyglet_ (com integração ao _DWM_ no Windows)
-  - **Recursos**: Ajuste de posição, tamanho, transparência e contraste adaptativo
+```
+RealTimeCaptioning/
+├── data/
+│   ├── raw/                # Áudio capturado (em taxa nativa, ex.: 48000 Hz)
+│   └── processed/          # Transcrições e áudio processado (reamostrado para 16000 Hz)
+├── docs/                   # Documentação e imagens do projeto
+├── notebooks/              # Notebooks para experimentação e testes
+├── src/
+│   ├── __init__.py         # Inicializa o pacote
+│   ├── captura_audio.py    # Módulo de captura de áudio via WASAPI
+│   ├── transcricao.py      # Módulo de transcrição utilizando Faster-Whisper e soxr
+│   └── utils.py            # Funções auxiliares (ex.: salvar transcrições)
+├── tests/                  # Testes unitários para os módulos
+│   ├── __init__.py
+│   ├── test_captura_audio.py
+│   └── test_transcricao.py
+├── .gitignore              # Arquivos e pastas a serem ignorados pelo Git
+├── README.md               # Este arquivo de documentação
+└── requirements.txt        # Lista de dependências do projeto
+```
 
 ## Configuração do Ambiente
 
-Para garantir a reprodutibilidade e isolamento das dependências, seguimos as práticas profissionais abaixo:
+1. **Criação do Ambiente Virtual:**
 
-1. **Ambiente Virtual**:
+   ```bash
+   python -m venv venv
+   ```
 
-   - Crie um ambiente virtual usando:
-     ```bash
-     python -m venv venv
-     ```
-   - Ative o ambiente:
-     - No Windows:
-       ```bash
-       venv\Scripts\activate
-       ```
-     - No macOS/Linux:
-       ```bash
-       source venv/bin/activate
-       ```
+   Ative o ambiente:
+   - Windows: `venv\Scripts\activate`
+   - macOS/Linux: `source venv/bin/activate`
 
-2. **Instalação de Dependências**:
+2. **Instalação das Dependências:**
 
-   - Liste as dependências em `requirements.txt`:
-     ```plaintext
-     pyqt5
-     sounddevice
-     faster-whisper
-     numpy
-     ```
-   - Instale-as com:
-     ```bash
-     pip install -r requirements.txt
-     ```
-   - Para congelar as versões, execute:
-     ```bash
-     pip freeze > requirements.txt
-     ```
+   As dependências estão listadas em `requirements.txt`. Utilize o seguinte comando:
 
-3. **Ferramentas de Linting e Formatação**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-   - Utilize o **Flake8** para análise estática:
+   *Exemplo de `requirements.txt`:*
+
+   ```plaintext
+   pyqt5==5.15.9
+   sounddevice==0.4.6
+   faster-whisper==1.0.3
+   numpy==1.23.5
+   scipy==1.9.3
+   pytest==7.2.0
+   pyaudiowpatch==0.2.12.7
+   soxr==0.2.0
+   ```
+
+3. **Ferramentas de Linting e Formatação (Opcional):**
+
+   - **Flake8:**  
      ```bash
      pip install flake8
      ```
-   - Configure o `.flake8`:
+     Configure um arquivo `.flake8` com:
      ```ini
      [flake8]
      max-line-length = 120
      exclude = venv,build,.vscode,__pycache__
      ```
-   - Utilize o **Black** para formatação automática:
+   - **Black:**  
      ```bash
      pip install black
      ```
-   - Instruções para formatação: `black src/`
+     Execute: `black src/` para formatar o código.
 
-4. **Controle de Versão e CI**:
-   - O repositório inclui um arquivo `.gitignore` (veja abaixo) para ignorar arquivos e pastas indesejadas.
-   - Planeje a configuração de uma pipeline CI (ex.: GitHub Actions) para rodar testes e validações de linting automaticamente.
+## Iniciando o Projeto
 
-## Roadmap e Futuras Extensões
+- **Executando o projeto:**  
+  A partir da raiz do projeto, use:
+  ```bash
+  python -m src.main
+  ```
+  Isso iniciará o sistema de captura e transcrição em tempo real, processando o áudio do dispositivo de loopback e salvando a transcrição em `data/processed/transcricao_atual.txt`.
 
-- **Fase 1 – Protótipo**: Implementação básica dos módulos de captura de áudio e transcrição, juntamente com uma interface de exibição simples.
-- **Fase 2 – Otimização**: Melhoria dos pipelines de processamento com técnicas de segmentação, threading e quantização, visando reduzir a latência e aprimorar a precisão.
-- **Fase 3 – Expansão**: Integração de suporte para múltiplos idiomas, personalizações avançadas na interface e adaptações para plataformas adicionais (Linux/macOS).
+## Roadmap (Futuras Extensões)
+
+- **Fase 1 – Protótipo:**  
+  Implementação básica dos módulos de captura de áudio e transcrição com integração do soxr para resampling.
+
+- **Fase 2 – Otimização:**  
+  Refinamento do pipeline de processamento (ajustes de thresholds, sincronização de timestamps, etc.) e melhorias na interface.
+
+- **Fase 3 – Expansão:**  
+  Suporte a múltiplos idiomas, customização avançada do overlay e adaptação para outras plataformas (Linux/macOS).
 
 ## Considerações Finais
 
-Este repositório reúne as ideias e os objetivos iniciais para o desenvolvimento de uma solução robusta e escalável de legendagem em tempo real. A proposta visa não somente atender a demandas de acessibilidade, mas também estabelecer um framework modular que permita futuras expansões e adaptações conforme novas necessidades surgirem.
+Este repositório reúne a base para um sistema robusto de legendagem em tempo real. Nosso foco atual é garantir a sincronização correta e evitar o efeito de *slow motion* no áudio, utilizando resampling de alta qualidade via *soxr*. Novas funcionalidades, como a interface visual e suporte a múltiplos idiomas, serão integradas em fases futuras.
 
-_Nota_: Este projeto encontra-se em estágio conceitual e de planejamento. Instruções de execução e documentação detalhada serão atualizadas conforme o desenvolvimento dos módulos.
+---
+
+*Nota:* Este projeto encontra-se em estágio conceitual e de prototipagem. Instruções detalhadas e documentação complementar serão atualizadas conforme o desenvolvimento dos módulos.
+
+---
+
+Esperamos que esta documentação facilite o início do desenvolvimento e a integração de novos recursos. Sinta-se à vontade para contribuir e sugerir melhorias.
+```
+
+Este README está formatado para fornecer uma visão clara, objetiva e atrativa do projeto, explicando desde a ideia central até as instruções de início e o roadmap. Ajuste imagens e detalhes conforme necessário para alinhar totalmente com sua identidade visual.
