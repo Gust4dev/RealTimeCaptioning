@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "realtime-captioning"
+version = "0.1.0"
+description = "Sistema de legendagem em tempo real usando WASAPI e Whisper"
+authors = ["Seu Nome <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+sounddevice = ">=0.5.1,<0.6.0"
+numpy = ">=1.25.0,<2.0.0"
+faster-whisper = ">=0.4.1" 
+openai-whisper = "^1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
