@@ -1,0 +1,29 @@
+[project]
+name = "realtime-captioning"
+version = "0.1.0"
+description = "RealTimeCaptioning — captioning in real time for desktop (PT-BR first)."
+authors = ["Gustavo Gomes dos Santos <seu.email@example.com>"]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+
+[project.dependencies]
+numpy = "^1.24"
+sounddevice = "^0.4"  # requires libportaudio on the system; optional if using mock
+resampy = "^0.4"
+pyside6 = "^6.5"
+# ASR backends are optional and added later:
+# faster-whisper, whisper.cpp are not included here to keep install light
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "black>=23.0",
+  "flake8>=6.0",
+  "mypy>=0.971",
+  "pre-commit>=2.20"
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
