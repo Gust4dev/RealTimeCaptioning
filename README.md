@@ -1,75 +1,116 @@
-# RealTimeCaptioning
 
-![Logo](docs/logo.png)
+<p align="center">
+  <img src="docs/logo.png" alt="Logo do Projeto" width="200"/>
+</p>
 
-**Legendagem automática em tempo real para desktop** — captura local do áudio do sistema, transcrição em streaming e overlay de legendas. Projeto modular, orientado a qualidade, testes e facilidade de contribuição.
-
----
-
-### Links rápidos
-
-- Repositório: [https://github.com/Gust4dev/RealTimeCaptioning](https://github.com/Gust4dev/RealTimeCaptioning)
-- Documentação: `docs/` (MkDocs / LaTeX)
-- Issues & Contribuição: abra uma issue no GitHub
+<h1 align="center">RealTimeCaptioning</h1>
+<p align="center">Sistema de legendagem automática em tempo real para acessibilidade digital</p>
 
 ---
 
-### Destaques
+## 📖 Sobre o Projeto
+O **RealTimeCaptioning** é um sistema integrado de legendagem automática em tempo real, desenvolvido para promover **acessibilidade digital**.  
+Utilizando tecnologias avançadas de **Reconhecimento Automático de Fala (ASR)**, o sistema converte áudio em texto instantaneamente, eliminando barreiras de comunicação para pessoas com deficiência auditiva e qualquer usuário que necessite de suporte textual.
 
-- Foco em baixíssima latência e precisão para PT‑BR
-- Arquitetura modular (captura, ASR, UI) — fácil de extender
-- Perfis configuráveis: `low_latency`, `balanced`, `high_accuracy`
-- Testes automatizados e CI (lint + pytest)
+Diferenciais:
+- Independente de plataformas específicas
+- Capacidade de operação em diferentes cenários e dispositivos
+- Suporte a múltiplos idiomas (planejado)
+- Interface gráfica amigável
 
 ---
 
-### Começando rápido
+## 📂 Estrutura do Projeto
+```
+
+src/
+├── asr/               # Módulo de transcrição de áudio
+├── audio/             # Captura e processamento de áudio
+├── config/            # Arquivos de configuração
+├── core/              # Aplicação principal
+├── ui/                # Interfaces gráficas (Qt)
+├── utils/             # Utilidades e logging
+tests/                  # Testes unitários
+docs/                   # Logo e documentação
+
+````
+
+---
+
+## 🚀 Instalação
+
+### Via Python
+1. **Clone o repositório**
+```bash
+git clone https://github.com/seuusuario/RealTimeCaptioning.git
+cd RealTimeCaptioning
+````
+
+2. **Instale as dependências**
 
 ```bash
-git clone https://github.com/Gust4dev/RealTimeCaptioning.git
-cd RealTimeCaptioning
+pip install -r requirements.txt
+```
+
+Ou usando o **poetry** (recomendado):
+
+```bash
 poetry install
-poetry shell
-make install-dev
-poetry run python -m src.core.app --backend mock
+```
+
+### Via Docker
+
+```bash
+docker build -t realtime-captioning .
+docker run --rm -it realtime-captioning
 ```
 
 ---
 
-### Estrutura (resumida)
+## 💻 Uso Básico
 
-```
-src/
-├─ audio/   # captura e resampling
-├─ asr/     # transcriber / adapters
-├─ ui/      # overlay (PySide6)
-├─ core/    # orquestrador
-└─ config/  # presets e perfis
+```bash
+python -m src.core.app
 ```
 
----
-
-### Contribuindo
-
-1. Abra uma issue descrevendo o objetivo
-2. Crie branch `feature/<nome>` a partir de `main`
-3. Faça PR com testes e descreva as mudanças
+O sistema iniciará a captura de áudio e exibirá as legendas em tempo real na interface.
 
 ---
 
-### Referências e recursos
+## ⚙️ Configuração
 
-- Whisper / Faster‑Whisper — [https://github.com/openai/whisper](https://github.com/openai/whisper) / [https://github.com/guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper)
-- whisper.cpp — [https://github.com/ggerganov/whisper.cpp](https://github.com/ggerganov/whisper.cpp)
-- sounddevice / soundcard — bibliotecas para captura de áudio em Python
-- PySide6 / Qt — toolkit recomendado para overlay
+Todas as configurações podem ser ajustadas no arquivo:
+
+```
+src/config/config.toml
+```
+
+Exemplos:
+
+* Taxa de amostragem do áudio
+* Idioma de reconhecimento
+* Estilo das legendas
 
 ---
 
-### Licença
+## 📦 Dependências Principais
 
-MIT
+* **Python 3.10+**
+* PyAudio / sounddevice
+* SpeechRecognition / ASR backend
+* PyQt5 / PySide6
+* NumPy / SciPy
 
 ---
 
-_Arquivo simples e direto. Substitua `docs/logo.png` pela arte do projeto quando disponível._
+## 🤝 Contribuidores
+
+* **Gustavo Gomes dos Santos** — *Universidade Evangélica de Goiás - UniEVANGÉLICA*
+
+---
+
+## 📜 Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+```
