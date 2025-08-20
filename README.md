@@ -1,116 +1,129 @@
-
 <p align="center">
-  <img src="docs/logo.png" alt="Logo do Projeto" width="200"/>
+  <img src="docs/logo.png" alt="Logo do Projeto" width="160"/>
 </p>
 
-<h1 align="center">RealTimeCaptioning</h1>
-<p align="center">Sistema de legendagem automática em tempo real para acessibilidade digital</p>
+# RealTimeCaptioning
+**Sistema de legendagem automática em tempo real (desktop).**
+
+O RealTimeCaptioning é um projeto open-source que captura áudio do sistema, transcreve em tempo real e exibe legendas como overlay.  
+Inicialmente focado em **desktop (Windows / macOS)** e em **pt-BR**, com arquitetura modular para suportar múltiplos backends de ASR no futuro.
 
 ---
 
-## 📖 Sobre o Projeto
-O **RealTimeCaptioning** é um sistema integrado de legendagem automática em tempo real, desenvolvido para promover **acessibilidade digital**.  
-Utilizando tecnologias avançadas de **Reconhecimento Automático de Fala (ASR)**, o sistema converte áudio em texto instantaneamente, eliminando barreiras de comunicação para pessoas com deficiência auditiva e qualquer usuário que necessite de suporte textual.
-
-Diferenciais:
-- Independente de plataformas específicas
-- Capacidade de operação em diferentes cenários e dispositivos
-- Suporte a múltiplos idiomas (planejado)
-- Interface gráfica amigável
+## ✨ Principais características
+- Captura de áudio via loopback do sistema (ex.: WASAPI / CoreAudio)
+- Pipeline em streaming com baixa latência
+- Backend ASR configurável (ex.: faster-whisper / whisper.cpp / mock)
+- Overlay em Qt (PySide6) com opções de estilo
+- Estrutura modular, testes automatizados e CI
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Estrutura do repositório
+
 ```
 
+docs/                   # logo e documentação
 src/
-├── asr/               # Módulo de transcrição de áudio
-├── audio/             # Captura e processamento de áudio
-├── config/            # Arquivos de configuração
-├── core/              # Aplicação principal
-├── ui/                # Interfaces gráficas (Qt)
-├── utils/             # Utilidades e logging
-tests/                  # Testes unitários
-docs/                   # Logo e documentação
+├─ audio/             # captura e resampling (AudioCapturer)
+├─ asr/               # transcriber e adapters
+├─ ui/                # overlay (PySide6) e config UI
+├─ core/              # orchestrator / entrypoint
+└─ config/            # config.toml
+tests/
+Makefile
+pyproject.toml
 
 ````
+
+---
+
+## 🔧 Requisitos (desenvolvimento)
+- Python 3.10+ (recomendado)
+- Conda / Miniconda (recomendado) ou Poetry
+- Drivers de áudio do SO (PortAudio para sounddevice)
+- (opcional) GPU para aceleração de ASR
 
 ---
 
 ## 🚀 Instalação
 
-### Via Python
-1. **Clone o repositório**
+### Usando conda (recomendado)
 ```bash
-git clone https://github.com/seuusuario/RealTimeCaptioning.git
-cd RealTimeCaptioning
+# criar e ativar ambiente
+conda create -n rtc python=3.10 -y
+conda activate rtc
+
+# adicionar canal conda-forge
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+
+# instalar dependências principais
+conda install numpy pyside6 python-sounddevice resampy pytest -y
 ````
 
-2. **Instale as dependências**
-
-```bash
-pip install -r requirements.txt
-```
-
-Ou usando o **poetry** (recomendado):
+### Usando Poetry (alternativa)
 
 ```bash
 poetry install
+poetry shell
 ```
 
-### Via Docker
+> Observação: o projeto usa `pyproject.toml`. Caso prefira pip, você pode exportar dependências com:
+>
+> ```bash
+> poetry export -f requirements.txt --output requirements.txt
+> ```
+
+---
+
+## ▶️ Execução (modo de desenvolvimento)
+
+Para testar sem carregar modelo ASR pesado, use o backend `mock`:
 
 ```bash
-docker build -t realtime-captioning .
-docker run --rm -it realtime-captioning
+python -m src.core.app --backend mock          # direto
+poetry run python -m src.core.app --backend mock   # se estiver no ambiente poetry
 ```
 
 ---
 
-## 💻 Uso Básico
+## 🧪 Testes e lint
 
 ```bash
-python -m src.core.app
-```
+# rodar testes
+pytest -q
 
-O sistema iniciará a captura de áudio e exibirá as legendas em tempo real na interface.
+# lint/format (pré-requisito: black/flake8 instalados)
+make lint
+```
 
 ---
 
 ## ⚙️ Configuração
 
-Todas as configurações podem ser ajustadas no arquivo:
+Configurações principais ficam no arquivo:
 
 ```
 src/config/config.toml
 ```
 
-Exemplos:
+Exemplos de parâmetros:
 
-* Taxa de amostragem do áudio
-* Idioma de reconhecimento
-* Estilo das legendas
-
----
-
-## 📦 Dependências Principais
-
-* **Python 3.10+**
-* PyAudio / sounddevice
-* SpeechRecognition / ASR backend
-* PyQt5 / PySide6
-* NumPy / SciPy
+* `samplerate`
+* `perfil` (`low_latency`, `balanced`, `high_accuracy`)
+* `device` (dispositivo de áudio)
 
 ---
 
-## 🤝 Contribuidores
+## 👤 Contribuidores
 
 * **Gustavo Gomes dos Santos** — *Universidade Evangélica de Goiás - UniEVANGÉLICA*
+
+> Contribuições são bem-vindas via issues/PRs.
 
 ---
 
 ## 📜 Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
+MIT — veja `LICENSE`.
